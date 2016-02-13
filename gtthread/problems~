@@ -1,0 +1,2 @@
+1. main cannot exit before other threads exit
+2. main exit has problems even it excute after other threads exiting, perhaps scheduler's problem.
