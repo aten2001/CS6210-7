@@ -80,8 +80,11 @@ int gtthread_mutex_unlock(gtthread_mutex_t *mutex){
   pthread_mutex_destroy and frees any resourcs associated with the mutex.
 */
 int gtthread_mutex_destroy(gtthread_mutex_t *mutex){
+    sigprocmask(SIG_BLOCK,&vtalrm,NULL);
     if(mutex->status == BUSY)
+        sigprocmask(SIG_UNBLOCK,&vtalrm,NULL);
         return EBUSY;
     steque_destroy(&(mutex->block_queue));
+    sigprocmask(SIG_UNBLOCK,&vtalrm,NULL);
     return 0;
 }
