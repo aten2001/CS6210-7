@@ -9,7 +9,7 @@ void *thr1(void *in) {
   	printf("Hello World!\n");
 	long i = 0;
 	int j = 0;
-	while(j != 100){
+	while(j != 10){
 		i = 0;
 		while(i < 1000000){
 			i++;
@@ -40,7 +40,7 @@ int main() {
 	//fflush(stdout);
 	int j = 0;
 	long i;
-	while(j != 50){
+	while(j != 10){
 		i = 0;
 		while(i<100000){
 			i++;
@@ -53,6 +53,7 @@ int main() {
 		//gtthread_yield();	
 		
 	}
+	gtthread_cancel(t1);
 	printf("main finish\n");
 	gtthread_exit(0);
   //gtthread_yield();
