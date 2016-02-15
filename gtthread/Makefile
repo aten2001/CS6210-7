@@ -20,5 +20,38 @@ dining_main: dining_main.o
 gtthread_main: gtthread_main.o $(GTTHREADS_OBJ)
 	$(CC) -o gtthread_main gtthread_main.o $(GTTHREADS_OBJ)
 
+gtthread_test1: gtthread_test1.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test1 gtthread_test1.o $(GTTHREADS_OBJ)
+
+gtthread_test2: gtthread_test2.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test2 gtthread_test2.o $(GTTHREADS_OBJ)
+
+gtthread_test3: gtthread_test3.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test3 gtthread_test3.o $(GTTHREADS_OBJ)
+
+gtthread_test4: gtthread_test4.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test4 gtthread_test4.o $(GTTHREADS_OBJ)
+
+gtthread_test5: gtthread_test5.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test5 gtthread_test5.o $(GTTHREADS_OBJ)
+
+gtthread_test6: gtthread_test6.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test6 gtthread_test6.o $(GTTHREADS_OBJ)
+
+gtthread_test7: gtthread_test7.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test7 gtthread_test7.o $(GTTHREADS_OBJ)
+
+gtthread_test8: gtthread_test8.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test8 gtthread_test8.o $(GTTHREADS_OBJ)
+
+gtthread_test9: gtthread_test9.o $(GTTHREADS_OBJ)
+	$(CC) -o gtthread_test9 gtthread_test9.o $(GTTHREADS_OBJ)
+
+test_join1: test_join1.o $(GTTHREADS_OBJ)
+	$(CC) -o test_join1 test_join1.o $(GTTHREADS_OBJ)
+
+producer_consumer_gtthread: producer_consumer_gtthread.o $(GTTHREADS_OBJ)
+	$(CC) -o producer_consumer_gtthread producer_consumer_gtthread.o $(GTTHREADS_OBJ)
+
 clean:
-	$(RM) -f *.o producer_consumer dining_main gtthread_main
+	$(RM) -f *.o producer_consumer dining_main gtthread_main gtthread_test1 test_join1

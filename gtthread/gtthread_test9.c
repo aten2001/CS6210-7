@@ -1,4 +1,4 @@
-#include <pthread.h>
+#include "gtthread.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -13,58 +13,64 @@ void *consumer_routine(void *arg);
 
 /* Global Data */
 long g_num_prod = 0; /* number of producer threads */
-pthread_mutex_t g_num_prod_lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t g_queue_lock = PTHREAD_MUTEX_INITIALIZER;
+gtthread_mutex_t g_num_prod_lock;
+gtthread_mutex_t g_queue_lock;
 
 /* Main - entry point */
 int main(int argc, char **argv) {
+  gtthread_mutex_init(&g_num_prod_lock);
+  gtthread_mutex_init(&g_queue_lock);
+  gtthread_init(10);
   steque_t queue;
-  pthread_t producer_thread, consumer_thread;
+  int N = 5;
+  gtthread_t producer_thread[N];
+  gtthread_t consumer_thread[N];
   void *thread_return = NULL;
   int result = 0;
 
   /* Initialization */
 
-  printf("Main thread started with thread id %"PRIdPTR"\n", (intptr_t) pthread_self());
+  printf("Main thread started with thread id %d\n", (gtthread_self()).id);
 
   steque_init(&queue);
 
-  g_num_prod = 1; /* there will be 1 producer thread */
-
+  g_num_prod = N; /* there will be N producer thread */
+int i =0;
   /* Create producer and consumer threads */
-
-  result = pthread_create(&producer_thread, NULL, producer_routine, &queue);
+  for(; i < N; i++){
+  result = gtthread_create(&producer_thread[i], producer_routine, &queue);
   if (0 != result) {
     fprintf(stderr, "Failed to create producer thread: %s\n", strerror(result));
     exit(1);
   }
 
-  printf("Producer thread started with thread id %" PRIdPTR "\n", (intptr_t) producer_thread);
-
-  result = pthread_create(&consumer_thread, NULL, consumer_routine, &queue);
+  result = gtthread_create(&consumer_thread[i], consumer_routine, &queue);
   if (0 != result) {
     fprintf(stderr, "Failed to create consumer thread: %s\n", strerror(result));
     exit(1);
   }
-
+}
+i =0;
   /* Join threads, handle return values where appropriate */
-
-  result = pthread_join(consumer_thread, &thread_return);
+for(; i < N; i++){
+  result = gtthread_join(consumer_thread[i], &thread_return);
   if (0 != result) {
     fprintf(stderr, "Failed to join consumer thread: %s\n", strerror(result));
-    pthread_exit(NULL);
+    gtthread_exit(NULL);
   }
 
-  result = pthread_join(producer_thread, NULL);
+  result = gtthread_join(producer_thread[i], NULL);
   if (0 != result) {
     fprintf(stderr, "Failed to join producer thread: %s\n", strerror(result));
-    pthread_exit(NULL);
+    gtthread_exit(NULL);
   }
+}
   
-  printf("\nPrinted %"PRIdPTR" characters.\n", (intptr_t) thread_return);
+  //printf("\nPrinted %"PRIdPTR" characters.\n", (intptr_t) thread_return);
 
-  pthread_mutex_destroy(&g_queue_lock);
-  pthread_mutex_destroy(&g_num_prod_lock);
+  gtthread_mutex_destroy(&g_queue_lock);
+  gtthread_mutex_destroy(&g_num_prod_lock);
+  gtthread_exit(0);
   return 0;
 }
 
@@ -74,27 +80,26 @@ int main(int argc, char **argv) {
 /* producer_routine - thread that adds the letters 'a'-'z' to the queue */
 void *producer_routine(void *arg) {
   steque_t *queue_p = arg;
-  int i= 0;
+  gtthread_t consumer_thread;
+  int i, result = 0;
   intptr_t c;
-
-  
 
   for (i = 0; i < 100; i++){
     for (c = 'a'; c <= 'z'; ++c) {
       /* Add the node to the queue */
-      pthread_mutex_lock(&g_queue_lock);
+      gtthread_mutex_lock(&g_queue_lock);
 
-      steque_enqueue(queue_p, c);
+      steque_enqueue(queue_p, (void*) c);
 
-      pthread_mutex_unlock(&g_queue_lock);
+      gtthread_mutex_unlock(&g_queue_lock);
 
-      sched_yield();
+      gtthread_yield();
     }
   }
 
-  pthread_mutex_lock(&g_num_prod_lock);
+  gtthread_mutex_lock(&g_num_prod_lock);
   --g_num_prod;
-  pthread_mutex_unlock(&g_num_prod_lock);
+  gtthread_mutex_unlock(&g_num_prod_lock);
   return (void*) 0;
 }
 
@@ -105,32 +110,32 @@ void *consumer_routine(void *arg) {
   intptr_t c;
   long count = 0; /* number of nodes this thread printed */
 
-  printf("Consumer thread started with thread id %"PRIdPTR"\n", (intptr_t) pthread_self());
+  printf("Consumer thread started with thread id %d\n", (gtthread_self()).id);
 
   /* terminate the loop only when there are no more items in the queue
    * AND the producer threads are all done */
 
-  pthread_mutex_lock(&g_queue_lock);
-  pthread_mutex_lock(&g_num_prod_lock);
+  gtthread_mutex_lock(&g_queue_lock);
+  gtthread_mutex_lock(&g_num_prod_lock);
 
   while(!steque_isempty(queue_p) || g_num_prod > 0) {
-    pthread_mutex_unlock(&g_num_prod_lock);
+    gtthread_mutex_unlock(&g_num_prod_lock);
 
     if (!steque_isempty(queue_p)) {
       c = (intptr_t) steque_pop(queue_p);
-      printf("%c", (char) c);
+      //printf("%c", (char) c);
       ++count;
-      pthread_mutex_unlock(&g_queue_lock);
+      gtthread_mutex_unlock(&g_queue_lock);
     }
     else { /* Queue is empty, so let some other thread run */
-      pthread_mutex_unlock(&g_queue_lock);
-      sched_yield();
+      gtthread_mutex_unlock(&g_queue_lock);
+      gtthread_yield();
     }
-    pthread_mutex_lock(&g_queue_lock);
-      pthread_mutex_lock(&g_num_prod_lock);
+    gtthread_mutex_lock(&g_queue_lock);
+  gtthread_mutex_lock(&g_num_prod_lock);
   }
-  pthread_mutex_unlock(&g_num_prod_lock);
-  pthread_mutex_unlock(&g_queue_lock);
-
+  gtthread_mutex_unlock(&g_num_prod_lock);
+  gtthread_mutex_unlock(&g_queue_lock);
+  printf("Consumer thread end with thread id %d\n", (gtthread_self()).id);
   return (void*) count;
 }

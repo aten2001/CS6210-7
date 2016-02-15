@@ -156,7 +156,7 @@ void thread_create_helper(gtthread_t * thread){
 	if(id == thread_pool_size){ //dynamically increase the thread pool size
 		gtthread_t ** temp = (gtthread_t **)malloc(2*thread_pool_size*sizeof(gtthread_t*));
 		memset(temp, 0, 2*thread_pool_size*sizeof(gtthread_t*));
-		memcpy(thread_pool, temp, thread_pool_size*sizeof(gtthread_t*));
+		memcpy(temp, thread_pool, thread_pool_size*sizeof(gtthread_t*));
 		free(thread_pool);
 		thread_pool = temp;
 		thread_pool_size *= 2;
